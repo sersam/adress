@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { debounce } from 'lodash';
 
 function App() {
@@ -10,14 +10,6 @@ function App() {
   const [data, setData] = useState([]);
   const [road, setRoad] = useState('');
   const [refCat, setRefCat] = useState(null);
-
-  const handleProvinceChange = (e) => {
-    setProvince(e.target.value);
-  };
-
-  const handleMunicipalityChange = (e) => {
-    setMunicipality(e.target.value);
-  };
 
   const handleNumberChange = (e) => {
     setNumber(e.target.value);
