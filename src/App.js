@@ -14,7 +14,8 @@ function App() {
   const handleNumberChange = (e) => {
     setNumber(e.target.value);
   };
-
+  
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const fetchSuggestions = useCallback(
     debounce(async (query) => {
       if (query.length > 1) {
