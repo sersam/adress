@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { debounce } from 'lodash';
+import { TextField, Button, Autocomplete, FormControl, Typography, Box, List, ListItem, ListItemText } from '@mui/material';
 
 function App() {
   const [province, setProvince] = useState('');
@@ -33,18 +34,20 @@ function App() {
     [municipality, province]
   );
 
-  const handleAddressChange = (e) => {
-    setAddress(e.target.value);
-    fetchSuggestions(e.target.value);
+  const handleAddressChange = (e, value) => {
+    setAddress(value);
+    fetchSuggestions(value);
   };
 
-  const handleSuggestionClick = (suggestion) => {
-    setAddress(suggestion.display_name);
-    setNumber(suggestion.address.house_number || '');
-    setProvince(suggestion.address.province || '');
-    setMunicipality(suggestion.address.city || suggestion.address.village || '');
-    setRoad(suggestion.address.road || '');
-    setSuggestions([]);
+  const handleSuggestionClick = (event, suggestion) => {
+    if (suggestion) {
+      setAddress(suggestion.display_name);
+      setNumber(suggestion.address.house_number || '');
+      setProvince(suggestion.address.province || '');
+      setMunicipality(suggestion.address.city || suggestion.address.village || '');
+      setRoad(suggestion.address.road || '');
+      setSuggestions([]);
+    }
   };
 
   const handleOnSubmit = (e) => {
@@ -61,75 +64,89 @@ function App() {
   };
 
   return (
-    <div>
+    <Box sx={{ p: 2 }}>
       <form onSubmit={handleOnSubmit}>
-        <div>
-          <label>Dirección:</label>
-          <input type="text" value={address} onChange={handleAddressChange} />
-          {suggestions.length > 0 && (
-            <select size="5">
-              {suggestions.map((suggestion, index) => (
-                <option key={index} onClick={() => handleSuggestionClick(suggestion)}>
-                  {suggestion.display_name}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-        <div>
-          <label>Provincia:</label>
-          <input type="text" value={province} disabled />
-        </div>
-        <div>
-          <label>Municipio:</label>
-          <input type="text" value={municipality} disabled />
-        </div>
-        <div>
-          <label>Calle:</label>
-          <input type="text" value={road} disabled />
-        </div>
+        <FormControl fullWidth margin="normal">
+          <Autocomplete
+            freeSolo
+            options={suggestions}
+            getOptionLabel={(option) => option.display_name}
+            onInputChange={handleAddressChange}
+            onChange={handleSuggestionClick}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Dirección"
+                value={address}
+              />
+            )}
+          />
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <TextField
+            label="Provincia"
+            value={province}
+            disabled
+          />
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <TextField
+            label="Municipio"
+            value={municipality}
+            disabled
+          />
+        </FormControl>
+        <FormControl fullWidth margin="normal">
+          <TextField
+            label="Calle"
+            value={road}
+            disabled
+          />
+        </FormControl>
         {province && municipality && (
-          <div>
-            <label>Número:</label>
-            <input type="text" value={number} onChange={handleNumberChange} />
-          </div>
+          <FormControl fullWidth margin="normal">
+            <TextField
+              label="Número"
+              value={number}
+              onChange={handleNumberChange}
+            />
+          </FormControl>
         )}
-        <button type="submit" disabled={!number || !province || !municipality || !road}>Verificar Dirección</button>
-
+        <Button type="submit" variant="contained" color="primary" disabled={!number || !province || !municipality || !road}>
+          Verificar Dirección
+        </Button>
       </form>
-      <div>
-
-        <label>Resultado:</label>
-        <ul>
-
-          {data.length > 0 ? <>
-            Dirección Válida.
-            <br></br>
-            Referencias catastrales en esta dirección:
-            <div style={{height: '100px', overflow: 'auto'}}>
-            {data.map((item, index) => data.map((item, index) => (
-              <li key={index} onClick={() => getDataRefCat(`${item.pc.pc1}${item.pc.pc2}`)} style={{ cursor: 'pointer', padding: '5px', border: '1px solid black' }}>
-                {item.pc.pc1}{item.pc.pc2}
-              </li>
-            )))}
-            </div>
-          </>
-            : <li>No hay resultados</li>}
-        </ul>
-      </div>
-      {
-        refCat && <div>
-          Información de la referencia catastral:
-          <br></br>
-          <label>Año: {refCat?.bi?.debi?.ant}</label>
-          <br></br>
-          <label>Superficie: {refCat?.bi?.debi?.sfc} m2</label>
-          <br></br>
-          <label>Uso: {refCat?.bi?.debi?.luso}</label>
-
-        </div>
-      }
-    </div >
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="h6">Resultado:</Typography>
+        <List>
+          {data.length > 0 ? (
+            <>
+              <Typography>Dirección Válida.</Typography>
+              <Typography>Referencias catastrales en esta dirección:</Typography>
+              <Box sx={{ overflow: 'auto' }}>
+                {data.map((item, index) => (
+                  <ListItem key={index} component={'button'} onClick={() => getDataRefCat(`${item.pc.pc1}${item.pc.pc2}`)}>
+                    <ListItemText primary={`${item.pc.pc1}${item.pc.pc2}`} />
+                  </ListItem>
+                ))}
+              </Box>
+            </>
+          ) : (
+            <ListItem>
+              <ListItemText primary="No hay resultados" />
+            </ListItem>
+          )}
+        </List>
+      </Box>
+      {refCat && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="h6">Información de la referencia catastral:</Typography>
+          <Typography>Año: {refCat?.bi?.debi?.ant}</Typography>
+          <Typography>Superficie: {refCat?.bi?.debi?.sfc} m2</Typography>
+          <Typography>Uso: {refCat?.bi?.debi?.luso}</Typography>
+        </Box>
+      )}
+    </Box>
   );
 }
 
